@@ -1,16 +1,14 @@
 <?php
 /*
 +---------------------------------------------------------------------------
-|   MyNetwork Core
-|	|- Post Reputation
+|   MyNetwork Post Reputation
+|	|- Post Reputation install procedures
 |   =============================================
 |   by Tom Moore (www.xekko.co.uk)
-|   Copyright 2010 Mooseypx Design / Xekko
+|   Copyright 2011 Mooseypx Design / Xekko
 |   =============================================
 +---------------------------------------------------------------------------
-|   > $Id: postrep_install.php 44 2010-10-07 14:48:02Z Tomm $
-|
-|	Install data for Post Reputation
+|   > Version 1.1.0
 +---------------------------------------------------------------------------
 */
 
