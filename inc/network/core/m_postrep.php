@@ -103,7 +103,7 @@ function postrep_info()
 		"description"	=> "This feature enables a Post Reputation system that allows voting on a post. This is similar to IPB3's post voting system.",
 		"website"		=> "http://xekko.co.uk",
 		"author"		=> "Tomm",
-		"version"		=> "1.1.3"
+		"version"		=> "1.1.4"
 	);
 }
 

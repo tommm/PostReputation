@@ -231,7 +231,7 @@ function postrep_xmlhttp_voters()
 
 function postrep_xmlhttp()
 {
-	global $charset, $db, $lang, $mybb, $network, $templates, $theme, $stylesheets;
+	global $Alerts, $charset, $db, $lang, $mybb, $network, $templates, $theme, $stylesheets;
 
 	// Check important things first
 	myn_lang("postrep");
@@ -366,6 +366,13 @@ function postrep_xmlhttp()
 		$db->update_query("users", array("reputation" => $user_reputation), "uid = '".$post['author']."'");
 	}
 
+	// Dear Euan, your alerts system SUCKS. kthxbye. xoxo
+	// Kidding. Let's see if MyAlerts is installed and if it is, notify the user
+	if(isset($Alerts))
+	{
+		$Alerts->addAlert($post['author'], 'rep', $post['pid'], $mybb->user['uid'], array());
+	}
+
 	// Return the post reputation area
 	$pid = $post['pid'];
 	$uid = $post['author'];
@@ -409,7 +416,7 @@ function postrep_xmlhttp()
 
 function postrep_xmlhttp_remove()
 {
-	global $charset, $db, $lang, $network, $mybb, $templates;
+	global $Alerts, $charset, $db, $lang, $network, $mybb, $templates;
 
 	myn_lang("postrep");
 	myn_lang("", true);
@@ -465,6 +472,12 @@ function postrep_xmlhttp_remove()
 		$reputation = $db->fetch_field($query, "reputation");
 
 		$db->update_query("users", array("reputation" => $reputation), "uid = '".$post['uid']."'");
+	}
+
+	// Have we got alerts?
+	if(isset($Alerts))
+	{
+		$db->delete_query('alerts', "uid = '{$post['uid']}' AND from_id = '{$mybb->user['uid']}' AND tid = '{$post['pid']}' AND alert_type = 'rep'");
 	}
 
 	// OOoooooohhhhh who lives in a pineapple under the sea?...
