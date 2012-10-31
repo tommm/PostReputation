@@ -50,6 +50,12 @@ if($mybb->settings['enablereputation'])
 				$plugins->add_hook("misc_start", "postrep_xmlhttp_voters", "postrep", MYBB_ROOT."inc/network/core/handles/xml_postrep.php");
 			}
 			break;
+		case "newreply.php":
+			if($mybb->input['ajax'])
+			{
+				$plugins->add_hook("postbit", "postrep_quick_reply", "postrep");
+			}
+			break;
 		case "reputation.php":
 			$plugins->add_hook("reputation_start", "postrep_reputation_start", "postrep");
 			$plugins->add_hook("reputation_end", "postrep_reputation_end", "postrep");
@@ -69,6 +75,7 @@ if($mybb->settings['enablereputation'])
 			break;
 		default:
 			global $network;
+			$network->storage['postrep']['forums'] = array();
 			$template_cache = "postbit_reparea,postbit_repminus,postbit_repplus,postbit_repremove";
 
 			if($mybb->settings['postrep_forums'])
@@ -84,7 +91,7 @@ if($mybb->settings['enablereputation'])
 
 	if($template_cache)
 	{
-		global $templates;
+		global $db, $templates;
 		$templates->myn_cache($db->escape_string($template_cache));
 	}
 }
@@ -96,7 +103,7 @@ function postrep_info()
 		"description"	=> "This feature enables a Post Reputation system that allows voting on a post. This is similar to IPB3's post voting system.",
 		"website"		=> "http://xekko.co.uk",
 		"author"		=> "Tomm",
-		"version"		=> "1.1.0"
+		"version"		=> "1.1.3"
 	);
 }
 
@@ -429,6 +436,41 @@ function postrep_reputation_end()
 	}
 }
 
+function postrep_quick_reply(&$post)
+{
+	global $mybb, $templates;
+
+	// Forum has rep posts?
+	if(!in_array($post['fid'], explode(",", $mybb->settings['postrep_forums'])))
+	{
+		return false;
+	}
+
+	// Because we're in quick reply, this is our only chance to add in the reputation
+	$id_style = "none";
+
+	// Figure out the rep link?
+	if($mybb->user['uid'])
+	{
+		$reputation_link = "<a href=\"javascript:;\" onclick=\"MyBB.popupWindow('".$mybb->settings['bburl']."/inc/network/misc.php?action=load_voters&amp;pid=".$post['pid']."', 'voters', 350, 350)\"><strong><span id=\"".$post['pid']."_rep\">0</span></strong></a>";
+	}
+	else
+	{
+		$reputation_link = "<strong>0</strong>";
+	}
+
+	eval("\$rep_area = \"".$templates->myn_get("postbit_reparea")."\";");
+
+	// Alter the templates to input our rep_area - sadly, we have no idea where it will be... :(
+	foreach($post as $piece => $cake)
+	{
+		$post[$piece] = str_replace("<!--REP_AREA_".$post['pid']."-->", $rep_area, $cake);
+	}
+
+	// Perhaps it's in the postbit template?
+	$templates->cache['postbit'] = str_replace("<!--REP_AREA_{\$post['pid']}-->", $rep_area, $templates->cache['postbit']);
+}
+
 function postrep_reply(&$post)
 {
 	global $ignored_users, $lang, $mybb, $network, $templates;
@@ -444,33 +486,6 @@ function postrep_reply(&$post)
 	{
 		// This user is being ignored by me...
 		$postrep_ignored[$post['uid']] = 1;
-	}
-
-	if($mybb->input['ajax'])
-	{
-		// Because we're in quick reply, this is our only chance to add in the reputation
-		$id_style = "none";
-
-		// Figure out the rep link?
-		if($mybb->user['uid'])
-		{
-			$reputation_link = "<a href=\"javascript:;\" onclick=\"MyBB.popupWindow('".$mybb->settings['bburl']."/inc/network/misc.php?action=load_voters&amp;pid=".$post['pid']."', 'voters', 350, 350)\"><strong><span id=\"".$post['pid']."_rep\">0</span></strong></a>";
-		}
-		else
-		{
-			$reputation_link = "<strong>0</strong>";
-		}
-
-		eval("\$rep_area = \"".$templates->myn_get("postbit_reparea")."\";");
-
-		// Alter the templates to input our rep_area - sadly, we have no idea where it will be... :(
-		foreach($post as $piece => $cake)
-		{
-			$post[$piece] = str_replace("<!--REP_AREA_".$post['pid']."-->", $rep_area, $cake);
-		}
-
-		// Perhaps it's in the postbit template?
-		$templates->cache['postbit'] = str_replace("<!--REP_AREA_".$post['pid']."-->", $templates->cache['postbit']);
 	}
 
 	// Hide this post?

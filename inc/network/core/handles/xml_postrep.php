@@ -73,13 +73,26 @@ function postrep_xmlhttp_voters()
 
 	while($rep_post = $db->fetch_array($query))
 	{
-		// We need to figure out who's voted positively for this
-		if($rep_post['reputation'] > 0)
+		if($rep_post['viapr'] != 0)
 		{
-			$plus_rep[] = $rep_post;
+			// Post Rep doesn't affect MyBB Rep
+			if($rep_post['viapr'] > 0)
+			{
+				$plus_rep[] = $rep_post;
+				continue;
+			}
+
+			$minus_rep[] = $rep_post;
 		}
 		else
 		{
+			// We need to figure out who's voted positively for this
+			if($rep_post['reputation'] > 0)
+			{
+				$plus_rep[] = $rep_post;
+				continue;
+			}
+
 			$minus_rep[] = $rep_post;
 		}
 	}
@@ -88,7 +101,7 @@ function postrep_xmlhttp_voters()
 	if(is_array($plus_rep))
 	{
 		// Count, and create correct language
-		$rep_count = $post_reputation;
+		$rep_count = 0;
 		$like_users = count($plus_rep);
 		if($like_users == 1)
 		{
@@ -107,9 +120,19 @@ function postrep_xmlhttp_voters()
 			$user_list = '';
 			foreach($plus_rep as $rep)
 			{
+				// Count Reputation
+				if($rep['viapr'] != 0)
+				{
+					$rep_count = $rep_count + $rep['viapr'];
+				}
+				else
+				{
+					$rep_count = $rep_count + $rep['reputation'];
+				}
+
 				// Format user profile link
 				$format_name = format_name(htmlspecialchars_uni($rep['username']), $rep['usergroup'], $rep['displaygroup']);
-				$profile_link = get_profile_link($rep['uid']);
+				$profile_link = get_profile_link($rep['adduid']);
 				$user_list .= '<a href="'.$mybb->settings['bburl'].'/'.$profile_link.'" target="_blank" onclick="window.opener.location.href=this.href; return false;">'.$format_name.'</a>';
 
 				if($count+1 != $like_users)
@@ -138,6 +161,7 @@ function postrep_xmlhttp_voters()
 	if(is_array($minus_rep))
 	{
 		$user_list = '';
+		$rep_count = 0;
 		$dislike_users = count($minus_rep);
 		if($dislike_users == 1)
 		{
@@ -155,6 +179,16 @@ function postrep_xmlhttp_voters()
 			$user_list = '';
 			foreach($minus_rep as $rep)
 			{
+				// Count Reputation
+				if($rep['viapr'] != 0)
+				{
+					$rep_count = $rep_count + $rep['viapr'];
+				}
+				else
+				{
+					$rep_count = $rep_count + $rep['reputation'];
+				}
+
 				// Format user profile link
 				$format_name = format_name(htmlspecialchars_uni($rep['username']), $rep['usergroup'], $rep['displaygroup']);
 				$profile_link = get_profile_link($rep['uid']);
@@ -172,23 +206,14 @@ function postrep_xmlhttp_voters()
 		}
 
 		// Standard things for minus votes
-		if(!$rep_count)
+		$rep_class = "rep_none";
+		if($rep_count > 0)
 		{
-			$rep_count = $post_reputation;
-
-			$rep_class = "rep_none";
-			if($rep_count > 0)
-			{
-				$rep_class = "rep_plus";
-			}
-			elseif($rep_count < 0)
-			{
-				$rep_class = "rep_minus";
-			}
+			$rep_class = "rep_plus";
 		}
-		else
+		elseif($rep_count < 0)
 		{
-			unset($rep_count, $rep_class);
+			$rep_class = "rep_minus";
 		}
 
 		eval("\$minus_users = \"".$templates->myn_get("misc_voting_list_bit")."\";");
@@ -244,6 +269,14 @@ function postrep_xmlhttp()
 		// Don't allow an update on an invisible post/thread, or if they have no permission
 		header("Content-type: text/xml; charset={$charset}");
 		echo "<error>".$lang->failed_invalid_post."</error>";
+		exit;
+	}
+
+	if($post['author'] == $mybb->user['uid'])
+	{
+		// User is trying to rate their own posts! :o
+		header("Content-type: text/xml; charset={$charset}");
+		echo "<error>".$lang->failed_own_post."</error>";
 		exit;
 	}
 
@@ -466,7 +499,7 @@ function postrep_xmlhttp_remove()
 	}
 
 	$about_title = $lang->sprintf($lang->about_postrep_dyn, $post['username']);
-	$reputation_link = "<a href=\"javascript:;\" onclick=\"MyBB.popupWindow('{$mybb->settings['bburl']}/xmlhttp.php?action=load_voters&amp;pid={$pid}', 'voters', 350, 350)\"><strong><span id=\"{$pid}_rep\">".$post_rep."</span></strong></a>";
+	$reputation_link = "<a href=\"javascript:;\" onclick=\"MyBB.popupWindow('{$mybb->settings['bburl']}/misc.php?action=load_voters&amp;pid={$pid}', 'voters', 350, 350)\"><strong><span id=\"{$pid}_rep\">".$post_rep."</span></strong></a>";
 
 	eval("\$rep_area = \"".$templates->myn_get("postbit_reparea")."\";");
 

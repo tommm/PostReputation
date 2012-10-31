@@ -443,9 +443,9 @@ document.write('".str_replace("/", "\/", $field_select)."');
 
 function postrep_forum_tabs_start($tabs)
 {
-	global $fid, $lang, $page, $plugins;
+	global $fid, $lang, $mybb, $page, $plugins;
 
-	if($page->active_action != "management" || !$fid || $mybb->input['action'])
+	if($page->active_action != "management" || !$fid || $mybb->input['action'] || $mybb->input['ajax'])
 	{
 		return false;
 	}
@@ -463,5 +463,7 @@ function postrep_forum_tabs_start($tabs)
 
 	// Add our hook for later
 	$plugins->add_hook("admin_page_output_footer", "postrep_forum_form_end_container", "postrep");
+
+	return $tabs; // Curse you, Dylan!
 }
 ?>

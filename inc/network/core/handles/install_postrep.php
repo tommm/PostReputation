@@ -32,15 +32,15 @@ function postrep_do_install()
 			"isdefault" => "0"
 		),
 		"postrep_forums" => array(
-			"title" => "Affected forums",
+			"title" => "Affected Forums",
 			"description" => "Select the forums you'd like Post Reputation to be used in.",
 			"optionscode" => "text",
 			"value" => "",
 			"isdefault" => "0"
 		),
 		"postrep_impose_limit" => array(
-			"title" => "Impose Post Reputation Limit?",
-			"description" => "If you want to limit the amount of posts users can give reputation to in 24 hours, enter the limit below. 0 is unlimited.",
+			"title" => "Hide Low Reputation Posts?",
+			"description" => "If a post drops below a certain reputation, should it be hidden? Users can still expand the post to read it.",
 			"optionscode" => "text",
 			"value" => "0",
 			"isdefault" => "0"

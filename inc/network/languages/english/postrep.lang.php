@@ -16,6 +16,7 @@ $l['failed_xmlhttprequest'] = "Could not update the Post Reputation. Please try 
 $l['failed_post_not_found'] = "Could not find that specific Post in the database. Please try again in a few minutes.";
 $l['failed_invalid_post'] = "This Post can't be updated as the Thread and/or the Post needs to be moderated first.";
 $l['failed_already_voted'] = "You have already voted on this post!";
+$l['failed_own_post'] = "You cannot rate your own post.";
 $l['failed_no_post'] = "This Post has been removed.";
 $l['failed_no_rep'] = "No one has given this post any reputation!";
 $l['failed_post_not_yours'] = "You do not have permission to remove this reputation.";
