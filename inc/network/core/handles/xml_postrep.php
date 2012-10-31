@@ -367,10 +367,20 @@ function postrep_xmlhttp()
 	}
 
 	// Dear Euan, your alerts system SUCKS. kthxbye. xoxo
-	// Kidding. Let's see if MyAlerts is installed and if it is, notify the user
+	// Kidding. Let's see if MyAlerts is installed and, if it is, notify the user
 	if(isset($Alerts))
 	{
-		$Alerts->addAlert($post['author'], 'rep', $post['pid'], $mybb->user['uid'], array());
+		$_user = get_user($post['author']);
+
+		if($_user['myalerts_settings'])
+		{
+			$_user['myalerts_settings'] = json_decode($_user['myalerts_settings'], true);
+		
+			if($_user['myalerts_settings']['rep'])
+			{
+				$Alerts->addAlert($post['author'], 'rep', $post['pid'], $mybb->user['uid'], array());
+			}
+		}
 	}
 
 	// Return the post reputation area
