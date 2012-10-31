@@ -375,8 +375,7 @@ function postrep_xmlhttp()
 		if($_user['myalerts_settings'])
 		{
 			$_user['myalerts_settings'] = json_decode($_user['myalerts_settings'], true);
-		
-			if($_user['myalerts_settings']['rep'])
+			if(!isset($_user['myalerts_settings']['rep']) || $_user['myalerts_settings']['rep'] == 'on')
 			{
 				$Alerts->addAlert($post['author'], 'rep', $post['pid'], $mybb->user['uid'], array());
 			}
